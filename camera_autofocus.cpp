@@ -126,21 +126,21 @@ public:
             return false;
         }
 
-        // Lens controller accepts a 10-bit value.
-        value &= 0x03FF;
+        union {
+        uint16_t data;
+        uint8_t array[2];
+        } buffer;
 
-        const uint8_t buffer[2] =
-        {
-            static_cast<uint8_t>(value & 0xFF),
-            static_cast<uint8_t>(value >> 8)
-        };
+   // Lens controller accepts a 10-bit value.
+        value &= 0x03FF;
+        buffer.data = (value >> 8) | (value << 8);
 
         while (true)
         {
             const ssize_t result =
                 ::write(
                     fd_,
-                    buffer,
+                    buffer.array,
                     sizeof(buffer));
 
             if (result == sizeof(buffer))
